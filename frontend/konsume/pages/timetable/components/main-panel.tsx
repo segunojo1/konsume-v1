@@ -1,24 +1,39 @@
 "use client";
 
 import { Tabs } from "@/components/ui/tabs";
-import { DateRange } from "react-day-picker";
+import type { DateRange } from "react-day-picker";
 import {
   format,
   addDays,
   eachDayOfInterval,
   eachWeekOfInterval,
+  parse,
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { formatDateToDDMMYY } from "@/lib/date";
-import { DailyMealsDatatype } from "@/@types/timetable";
-import { setMeals } from "@/redux/features/timetable/timetable.slice";
-import Marquee from "@/components/ui/marquee";
+import type { DailyMealsDatatype } from "@/@types/timetable";
+import {
+  setDailyMeals,
+  setMeals,
+  setTimetableLoading,
+} from "@/redux/features/timetable.slice";
 import Image from "next/image";
 import MealsInfoCard from "./meals-info-card";
 import DayContent from "./day-content";
+import Cookies from "js-cookie";
+import { useGetMealPlansQuery } from "@/redux/api/timetable.api";
+import Loading from "./loading";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { useUserContext } from "@/context/UserContext";
 
 type Props = {
   date: DateRange | undefined;
@@ -28,8 +43,11 @@ type Props = {
 
 function MainPanel({ date, open, setOpen }: Props) {
   const [weekOffset, setWeekOffset] = useState(0);
-  const { dailyMeals } = useAppSelector((state) => state.timetable);
+  const { dailyMeals, loading } = useAppSelector((state) => state.timetable);
   const dispatch = useAppDispatch();
+  const { profileID } = useUserContext();
+  const { data, isLoading } = useGetMealPlansQuery(profileID);
+  const [activeDate, setActiveDate] = useState<string | null>(null);
 
   const weeks =
     date?.from && date?.to
@@ -49,30 +67,50 @@ function MainPanel({ date, open, setOpen }: Props) {
     setWeekOffset((prev) => (prev - 4 >= 0 ? prev - 4 : 0));
   };
 
-  const filterMealsByDay = (
-    dailyMeals: DailyMealsDatatype[] | null,
-    date: string
-  ) => {
-    const meals = dailyMeals
-      ? dailyMeals?.find((day) => day.date === date)?.meals || null
-      : null;
+  const filterMealsByDay = useCallback(
+    (dailyMeals: DailyMealsDatatype[] | null, date: string) => {
+      const meals = dailyMeals
+        ? dailyMeals?.find((day) => {
+            // Format the API date to match your 'DD/MM/YY' format
+            const formattedAPIDate = formatDateToDDMMYY(new Date(day.date));
+            return formattedAPIDate === date;
+          })?.meal?.$values || null
+        : null;
+      return dispatch(setMeals(meals));
+    },
+    [dispatch]
+  );
 
-    return dispatch(setMeals(meals));
+  const handleDayClick = (date: string) => {
+    filterMealsByDay(dailyMeals, date); // Filter meals as usual
+    console.log("date change");
+    setActiveDate(date); // Update the activeDate when a button is clicked
   };
-
-  console.log(weeks);
-
   useEffect(() => {
-    if (date?.from) {
-      const dateData = formatDateToDDMMYY(date?.from);
-      filterMealsByDay(dailyMeals, dateData);
+    if (activeDate) {
+      console.log("activeDate has changed:", activeDate);
+      // Perform other actions if needed, based on the new activeDate value
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date, dailyMeals]);
+  }, [activeDate]); 
+  useEffect(() => {
+  // If the date is available, update the activeDate and filter the meals
+  if (date?.from) {
+    const formattedDate = formatDateToDDMMYY(date.from);
+    setActiveDate(formattedDate); // Set activeDate based on the selected date
+    filterMealsByDay(dailyMeals, formattedDate); // Call the filterMealsByDay function
+  }
+}, [date, dailyMeals, filterMealsByDay]);
 
   useEffect(() => {
-    // TODO: Call the timetable endpoint here
-  }, []);
+    if (isLoading) {
+      dispatch(setTimetableLoading(true));
+    } else if (data?.value?.$values) {
+      console.log(data.value.$values); // Debug: Check if data is fetched correctly
+      dispatch(setDailyMeals(data.value.$values));
+    } else {
+      console.error("Data is not in expected format:", data); // Debug error logging
+    }
+  }, [data, dispatch, isLoading]);
 
   const tabs = [
     {
@@ -81,23 +119,26 @@ function MainPanel({ date, open, setOpen }: Props) {
       content: (
         <div className="space-y-16 overflow-hidden">
           <div className=" flex gap-[18px] w-full justify-between flex-wrap ">
-            {days.map((day, index) => {
-              const date = formatDateToDDMMYY(day);
-              return (
-                <Button
-                  key={index}
-                  className="rounded-lg px-[7px] py-[14px] bg-base-black text-base-white gap-2 flex flex-col items-center w-[103px] h-auto"
-                  onClick={() => filterMealsByDay(dailyMeals, date)}
-                >
-                  <p className="text-desktop-caption font-bold">
-                    {format(day, "EEEE")}
-                  </p>
-                  <p className="text-desktop-feature font-bold">
-                    {format(day, "dd")}
-                  </p>
-                </Button>
-              );
-            })}
+          {days.map((day) => {
+        const date = formatDateToDDMMYY(day);
+        console.log(date);
+        
+        return (
+          <Button
+            key={`day-${date}`}
+            // Add conditional class based on whether this date is the active one
+            className={`cursor-pointer rounded-lg px-[8px] py-[14px] gap-2 flex flex-col items-center w-[103px] h-auto ${
+              activeDate == date
+                ? "bg-[#0A0609] text-base-white" // Apply active styles
+                : "bg-secondary-100 text-primarytext" // Default styles
+            }`}
+            onClick={() => handleDayClick(date)}
+          >
+            <p className="text-desktop-caption font-bold">{format(day, "EEEE")}</p>
+            <p className="text-desktop-feature font-bold">{format(day, "dd")}</p>
+          </Button>
+        );
+      })}
           </div>
           <DayContent />
         </div>
@@ -136,18 +177,31 @@ function MainPanel({ date, open, setOpen }: Props) {
           >
             {weeks.map((week, index) => {
               const date = formatDateToDDMMYY(week);
+
               const filteredMeals =
-                dailyMeals?.find((day) => day.date === date)?.meals || [];
-              console.log(date, "week", dailyMeals);
+                dailyMeals?.find((day) => {
+                  // Convert API date to YYYY-MM-DD format
+                  const formattedAPIDate = new Date(day.date)
+                    .toISOString()
+                    .split("T")[0];
+
+                  // Parse the DD/MM/YY date string into a Date object, then convert it to YYYY-MM-DD format
+                  const parsedInputDate = parse(date, "dd/MM/yy", new Date());
+                  const formattedInputDate = parsedInputDate
+                    .toISOString()
+                    .split("T")[0];
+
+                  return formattedAPIDate === formattedInputDate;
+                })?.meal.$values || [];
+
+              console.log(date, "week", filteredMeals);
+
               return (
                 <div
-                  key={index}
-                  className="flex flex-col  flex-1 gap-10 items-center"
+                  key={`week-${date}`}
+                  className=" flex flex-col  flex-1 gap-10 items-center"
                 >
-                  <div
-                    key={index}
-                    className="rounded-lg px-[7px] py-[14px] bg-base-black text-base-white gap-2 flex flex-col items-center w-[103px]"
-                  >
+                  <div className="cursor-pointer rounded-lg px-[7px] py-[14px] bg-base-black text-base-white gap-2 flex flex-col items-center w-[103px]">
                     <p className="text-desktop-caption font-bold">
                       {format(week, "EEEE")}
                     </p>
@@ -156,9 +210,9 @@ function MainPanel({ date, open, setOpen }: Props) {
                     </p>
                   </div>
                   <div className="border-[#D1C9F7] border-r px-5 w-full space-y-8 ">
-                    {filteredMeals.map((meal, index) => (
+                    {filteredMeals?.map((meal) => (
                       <MealsInfoCard
-                        key={index}
+                        key={meal.label}
                         data={meal}
                         className="w-full"
                       />
@@ -176,12 +230,16 @@ function MainPanel({ date, open, setOpen }: Props) {
   return (
     <div className="flex-[3] px-7 container">
       <div className="flex flex-col items-center justify-center w-full relative">
-        <Tabs
-          key={
-            weekOffset || (date?.from?.toISOString() && date?.to?.toISOString())
-          }
-          tabs={tabs}
-        />
+      {loading ? (
+  <Loading />
+) : (
+  <Tabs
+    key={`${weekOffset}-${activeDate}-${date?.from?.toISOString()}-${date?.to?.toISOString()}`} // Include activeDate in the key
+    tabs={tabs}
+  />
+)}
+
+
         {!open && (
           <Button
             onClick={() => setOpen(!open)}
@@ -195,4 +253,4 @@ function MainPanel({ date, open, setOpen }: Props) {
     </div>
   );
 }
-export default MainPanel
+export default MainPanel;

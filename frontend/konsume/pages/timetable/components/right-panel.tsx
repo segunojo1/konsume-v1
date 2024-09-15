@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { Calendar } from "@/components/ui/calendar";
-import { DateRange } from "react-day-picker";
+import type { DateRange } from "react-day-picker";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
@@ -9,6 +10,11 @@ import nutritionalInfo, { colors } from "../../../helpers/timetable/data";
 import Card from "./card";
 import NutritionalInfoBox from "./nutritional-info-box";
 import getRandomColor from "../utils";
+import { NutritionalValue } from "@/@types/timetable";
+import { useUserContext } from "@/context/UserContext";
+import SpotlightedMealCard from "@/modules/dashboard/body/SpotlightedMealCard";
+import DashboardContext from "@/context/DashboardContext";
+
 
 type Props = {
   date: DateRange | undefined;
@@ -18,20 +24,23 @@ type Props = {
 };
 
 const RightPanel = ({ date, setDate, open, setOpen }: Props) => {
+  const { username } = useUserContext();
   const [firstName, setFirstName] = useState("");
-
   useEffect(() => {
-    const user = Cookies.get("konsumeUsername")!;
-    const [firstName] = user.split(" ");
-    setFirstName(firstName);
-  }, []);
+    if (username) {
+      const [firstName] = username.split(" ");
+      setFirstName(firstName);
+    }
+  }, [username]);
+  const { breakfast, loading } = useContext(DashboardContext);
+
 
   return (
     <motion.aside
-      className=" space-y-11 w-[273px] overflow-hidden "
+      className=" space-y-11 w-[273px] overflow-hidden hidden sm:block f"
       animate={{
-        width: open ? "273px" : "30px",
-        display: open ? "block" : "none",
+        width: open ? "273px" : "0px",
+        // display: open ? "block" : "none",
       }}
     >
       <section className="relative">
@@ -46,7 +55,7 @@ const RightPanel = ({ date, setDate, open, setOpen }: Props) => {
         <Card.Container>
           <Calendar mode="range" selected={date} onSelect={setDate} />
         </Card.Container>
-        <Card.Container>
+        {/* <Card.Container>
           <div className="space-y-6">
             <div className="flex justify-between gap-4 ">
               <h2 className="text-desktop-caption font-bold max-w-[125px]">
@@ -67,26 +76,26 @@ const RightPanel = ({ date, setDate, open, setOpen }: Props) => {
               View Recipe and Details
             </Button>
           </div>
-        </Card.Container>
+        </Card.Container> */}
+        <SpotlightedMealCard meal={breakfast} loading={loading} />
         <Card.Container>
           <div className="space-y-6">
             <h2 className="text-desktop-caption font-bold max-w-[125px]">
               Nutritional Info
             </h2>
             <div className="space-y-1 max-w-[196px] mx-auto">
-              {nutritionalInfo &&
-                nutritionalInfo.map(({ name, value, unit }, index) => {
-                  const bg = getRandomColor();
-                  return (
-                    <NutritionalInfoBox
-                      key={index}
-                      bg={bg}
-                      name={name}
-                      value={value}
-                      unit={unit}
-                    />
-                  );
-                })}
+              {nutritionalInfo?.$values?.map(({ name, value, unit }:NutritionalValue) => {
+                const bg = getRandomColor();
+                return (
+                  <NutritionalInfoBox
+                    key={`${name}-${value}-${unit}`}
+                    bg={bg}
+                    name={name}
+                    value={value}
+                    unit={unit}
+                  />
+                );
+              })}
             </div>
           </div>
         </Card.Container>
@@ -94,4 +103,4 @@ const RightPanel = ({ date, setDate, open, setOpen }: Props) => {
     </motion.aside>
   );
 };
-export default RightPanel
+export default RightPanel;

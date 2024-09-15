@@ -7,11 +7,14 @@ import MainBlogText from '@/modules/blog/MainBlogText'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
 import React, { useEffect, useState } from 'react'
+import Cookies from 'js-cookie'
+import { useUserContext } from '@/context/UserContext'
 
 const BlogDetail = () => {
     const router = useRouter()
     const { title } = router.query
     const [blog, setBlog] = useState<BlogProps>();
+    const {profileID} = useUserContext();
 
     useEffect(() => {
         const fetchBlogData = async () => {
@@ -28,7 +31,9 @@ const BlogDetail = () => {
               // Blog not found in localStorage, fetch from API
               try {
                 const { data } = await axiosKonsumeInstance.get('/api/Blog/GenerateBlog', {
-                  params: { title },
+                  params: { 
+                    healthGoal: title
+                   },
                 });
     
                 if (data) {
@@ -48,6 +53,21 @@ const BlogDetail = () => {
     
         fetchBlogData();
       }, [title]);
+      useEffect(() => {
+        const addToStreaks = async () => {
+          try {
+            const {data} = await axiosKonsumeInstance.get('/api/Streak/update-reading-streak', {
+              params: {
+                profileId: profileID
+              }
+            })
+            console.log(data);
+          } catch (error) {
+            console.log(error);
+          }
+        }
+        addToStreaks();
+      }, [])
 
     if (!blog) {
         return <p>Loading...</p>

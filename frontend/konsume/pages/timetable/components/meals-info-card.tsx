@@ -4,51 +4,40 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ArrowDownRight, ArrowUpRight, Clock } from "lucide-react";
 import Image from "next/image";
 import getRandomColor, { getColorsByMealType } from "../utils";
-import { MealDatatype } from "@/@types/timetable";
+import type { MealDatatype } from "@/@types/timetable";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import NutritionalInfoBox from "./nutritional-info-box";
+import { cn } from "@/lib/utils";
 
 type Props = {
   data: MealDatatype;
   className?: string;
 };
 
-const MealsInfoCard = ({
-  className,
-  data: {
-    label,
-    mealType,
-    foodName,
-    foodDescription,
-    tags,
-    cookTime,
-    caloriesPerServing,
-    nutritionalInfo,
-  },
-}: Props) => {
+const MealsInfoCard = ({ className, data }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { primaryColor, secondaryColor } = getColorsByMealType(label);
+  const { primaryColor, secondaryColor } = getColorsByMealType(data?.label);
 
   return (
-    <CardContainer className="inter-var w-full">
+    <CardContainer className={cn("inter-var w-full", className)}>
       <div
         style={{ backgroundColor: primaryColor }}
         className="lg:min-w-[245px] max-w-[260px] w-full [transform-style:preserve-3d]  [&>*]:[transform-style:preserve-3d] rounded-[30px] shadow-meal-card px-2 py-6 space-y-[30px]"
       >
         <MealBriefDetail
           bg={secondaryColor}
-          name={mealType}
-          foodName={foodName}
-          foodDescription={foodDescription}
+          name={data?.mealType}
+          foodName={data?.foodName}
+          foodDescription={data?.foodDescription}
         />
         <Dialog open={isOpen}>
           <DialogTrigger onClick={() => setIsOpen(true)} asChild>
             <CardItem className=" cursor-pointer text-desktop-caption gap-3   flex items-center px-0">
               <CardItem
                 rotateZ="30"
-                className="  w-max roundsetIsOpen(!isOpen)setIsOpen(!isOpen)ed-[3.8px] bg-neutrals-100 p-[4px] -rotate-[8deg]"
+                className="  w-max roundsetIsOpen(!isOpen)setIsOpen(!isOpen)ed-[3.8px] bg-[#0C2503] p-[10px] py-[6px] rounded-sm -rotate-[8deg]"
               >
-                <ArrowUpRight className="rotate-[14deg]" />
+                <ArrowUpRight className="rotate-[14deg] text-[#EDFAE7]" />
               </CardItem>
               <CardItem translateZ="20" className="font-bold text-[14px]">
                 Expand Meal Card
@@ -59,30 +48,29 @@ const MealsInfoCard = ({
             closeIcon={false}
             className="font-satoshi max-w-[363px] 2xl:px-[49px] px-9 shadow-meal-card-modal !rounded-[32px] 2xl:space-y-8 space-y-2 "
           >
-            <div className="2xl:space-y-7 space-y-3">
+            <div className="2xl:space-y-7 space-y-6">
               <MealBriefDetail
                 bg={secondaryColor}
-                name={mealType}
-                foodName={foodName}
-                foodDescription={foodDescription}
+                name={data?.mealType}
+                foodName={data?.foodName}
+                foodDescription={data?.foodDescription}
               />
               <div className="flex justify-between">
                 <Button
                   onClick={() => setIsOpen(false)}
                   className="text-desktop-caption gap-3 px-0"
                 >
-                  <div className=" rounded-[3.8px] bg-neutrals-100 p-[4px] rotate-[8deg]">
-                    <ArrowDownRight className="-rotate-[14deg]" />
+                  <div className=" rounded-[3.8px] bg-[#0C2503] p-[10px] py-[6px] rotate-[8deg]">
+                    <ArrowDownRight className="-rotate-[14deg] text-[#EDFAE7]" />
                   </div>
                   Close Meal Card
                 </Button>
                 <Image src="/shop-icon.svg" alt="" width={28} height={21} />
               </div>
               <div className="flex flex-wrap gap-[6px] max-w-[184px]">
-                {tags &&
-                  tags.map((tag, index) => (
-                    <TagInfo key={index} bg="#D6FBC4" name={tag} />
-                  ))}
+                {data?.tags?.$values?.map((tag) => (
+                  <TagInfo key={tag} bg="#D6FBC4" name={tag} />
+                ))}
               </div>
             </div>
             <div className="bg-base-white p-[10px] rounded-sm shadow-meal-card-modal-last-item 2xl:space-y-10 space-y-4">
@@ -92,7 +80,7 @@ const MealsInfoCard = ({
                   <div className="flex justify-between items-center gap-[10px]">
                     <Clock />
                     <span className="font-bold text-[12px]">
-                      {cookTime}mins
+                      {data?.cookTime}mins
                     </span>
                   </div>
                 </div>
@@ -101,25 +89,24 @@ const MealsInfoCard = ({
                   <div className="flex justify-between items-center gap-[10px]">
                     <Clock />
                     <span className="font-bold text-[12px]">
-                      {caloriesPerServing} Kcal
+                      {data?.caloriesPerServing} Kcal
                     </span>
                   </div>
                 </div>
               </div>
               <div className="space-y-1">
-                {nutritionalInfo &&
-                  nutritionalInfo.map(({ name, value, unit }, index) => {
-                    const bg = getRandomColor("#FFFFFF");
-                    return (
-                      <NutritionalInfoBox
-                        key={index}
-                        bg={bg}
-                        name={name}
-                        value={value}
-                        unit={unit}
-                      />
-                    );
-                  })}
+                {data?.nutritionalInfo?.$values?.map(({ name, value, unit }) => {
+                  const bg = getRandomColor("#FFFFFF");
+                  return (
+                    <NutritionalInfoBox
+                      key={name}
+                      bg={bg}
+                      name={name}
+                      value={value}
+                      unit={unit}
+                    />
+                  );
+                })}
               </div>
             </div>
           </DialogContent>
@@ -171,4 +158,4 @@ const TagInfo = ({ bg, name }: { bg: string; name: string }) => (
   </div>
 );
 
-export default MealsInfoCard
+export default MealsInfoCard;

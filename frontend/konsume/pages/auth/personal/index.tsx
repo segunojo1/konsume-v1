@@ -1,9 +1,10 @@
+import withoutAuth from '@/helpers/withoutAuth';
 import { SignupForm } from '@/modules/auth/signup/SignupForm';
 import React from 'react';
 
 const Signup = () => {
   return (
-    <div className='py-10 mx-auto max-w-[358px] font-satoshi'>
+    <div className='py-10 px-4 mx-auto max-w-[358px] font-satoshi'>
       <div>
         <h3 className='text-desktop-content font-bold mb-8'>
           Sign up for yourself and get personalized meal recommendations, progress tracking, and more.
@@ -14,4 +15,4 @@ const Signup = () => {
   );
 }
 
-export default Signup;
+export default withoutAuth(Signup);

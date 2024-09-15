@@ -36,7 +36,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ form, onSubmit }) => (
                                         placeholder="Input your password"
                                         type="password"
                                         {...field}
-                                        className="xl:max-w-[348.9px] text-[17.44px] text-[#8C8CA1] py-[13px] px-[17px]"
+                                        className="max-w-[348.9px] md:w-[348.9px] w-full text-[17.44px] text-[#8C8CA1] py-[13px] px-[17px]"
                                     />
                                 </FormControl>
                                 <FormMessage />
@@ -44,7 +44,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ form, onSubmit }) => (
                         )}
                     />
                 </div>
-                <Button className="mt-8 w-[348.9px] bg-[#8DCF384D] p-[10px] border-2 border-[#D6FBC4] rounded-[30px] text-desktop-highlight font-bold min-h-[52px]" type="submit">
+                <Button className="mt-8 w-full max-w-[348.9px] bg-[#8DCF384D] p-[10px] border-2 border-[#D6FBC4] rounded-[30px] text-desktop-highlight font-bold min-h-[52px]" type="submit">
                     Continue
                 </Button>
             </form>

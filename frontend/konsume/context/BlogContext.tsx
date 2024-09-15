@@ -4,6 +4,8 @@ import Cookies from 'js-cookie';
 import { axiosKonsumeInstance } from '@/http/konsume';
 import { retry } from '@/helpers/retryapi';
 import { toast } from 'react-toastify';
+import { useUserContext } from './UserContext';
+import { useRouter } from 'next/router';
 
 const BlogContext = createContext({} as any);
 export default BlogContext;
@@ -20,13 +22,10 @@ export function BlogContextProvider({ children }: { children: React.ReactNode })
     const [bookmarkedBlogs, setBookmarkedBlogs] = useState([]);
     const [tempBookmarks, setTempBookmarks] = useState(bookmarkedBlogs);
     const [loadingBlog, setLoadingBlog] = useState(false)
+    const {getProfileID} = useUserContext();
+    const router = useRouter();
 
     const dataFetchedRef = useRef(false);
-    useEffect(() => {
-
-        const username = Cookies.get('konsumeUsername')
-        setName(username)
-    }, [])
 
     useEffect(() => {
         console.log('hi');
@@ -36,7 +35,7 @@ export function BlogContextProvider({ children }: { children: React.ReactNode })
             try {
                 setLoadingBlog(true);
                 const { data } = await axiosKonsumeInstance.get('/api/Blog/GenerateAllBlogs');
-                console.log(data);
+                // console.log(data);
 
                 setBlogs(data.content);
                 setTempBlogs(data.content)
@@ -83,14 +82,14 @@ export function BlogContextProvider({ children }: { children: React.ReactNode })
             checkAndFetchBlogs();
             dataFetchedRef.current = true;
         }
-    }, [setBlogs, blogs]);
+    }, []);
 
     useEffect(() => {
         const getBookmarks = async () => {
             try {
 
-                const { data } = await axiosKonsumeInstance.get(`/api/Bookmark/${Cookies.get("userid")}`)
-                console.log(data);
+                const { data } = await axiosKonsumeInstance.get(`/api/Bookmark/${await getProfileID()}`)
+                // console.log(data);
                 if (data?.value?.$values) {
                     console.log(data?.value?.$values);
                     // Store the array in localStorage
@@ -104,7 +103,7 @@ export function BlogContextProvider({ children }: { children: React.ReactNode })
 
                 }
             } catch (error) {
-                console.log(error);
+                // console.log(error);
             } finally {
                 if (typeof window !== 'undefined') {
                     const cachedBlogs = JSON.parse(localStorage.getItem('bookmarks') || '[]');
@@ -114,7 +113,7 @@ export function BlogContextProvider({ children }: { children: React.ReactNode })
             }
         }
         getBookmarks()
-    }, [])
+    }, [router.pathname])
 
     const contextValue: any = {
         activePage,

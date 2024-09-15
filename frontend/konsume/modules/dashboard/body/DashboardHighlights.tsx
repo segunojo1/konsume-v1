@@ -13,10 +13,16 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { A11y, Navigation, Pagination, Scrollbar } from "swiper/modules";
 import { Button } from "@/components/ui/button";
+import { DashboardBlogSkeleton } from "@/components/skeleton-loaders/DashboardBlogSkeleton";
 interface DashboardHighlightsProp {
   loading: boolean;
+  loadingBlog: boolean | undefined;
+   key: number | undefined;
+    title: string | undefined;
+     text: string | undefined;
+      category: string | undefined;
 }
-const DashboardHighlights = ({ loading }: DashboardHighlightsProp) => {
+const DashboardHighlights = ({ loading, loadingBlog, key, title, text, category }: DashboardHighlightsProp) => {
   const { nutritionTea } = useContext(DashboardContext);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -37,18 +43,6 @@ const DashboardHighlights = ({ loading }: DashboardHighlightsProp) => {
           onSlideChange={() => console.log('slide change')}
           className="flex "
         >
-          <SwiperSlide>
-            <div className="flex flex-col bg-[#D6FBC4] p-4 rounded-2xl js-tilt h-[80%] mealreco md:min-w-fit min-w-full md:flex-[.5]">
-              <div className="flex justify-between items-center mb-5">
-                <p className="font-bold text-xs">Restaurant Track</p>
-                <Image src={scanner} alt="restaurant" />
-              </div>
-              <Button className="bg-[#fafafa86] border-primary-bg-100 border-2 mx-auto mt-10 text-primarygtext font-medium text-xs rounded-lg py-[11px] px-[32.5px] flex items-center gap-2 justify-center">
-                <Image src="/icon7.svg" height={27.6} width={27.6} alt="icon" />
-                <p className="text-mobile-caption font-bold">Setup Restaurant Profile</p>
-              </Button>
-            </div>
-          </SwiperSlide>
           <SwiperSlide>
             <div className=" h-[80%] flex md:hidden">
               <DashboardProgressTracker />
@@ -72,11 +66,32 @@ const DashboardHighlights = ({ loading }: DashboardHighlightsProp) => {
               </div>
             </div>
           </SwiperSlide>
+          <SwiperSlide>
+            <div className="flex flex-col bg-[#D6FBC4] p-4 rounded-2xl js-tilt h-[80%] mealreco md:min-w-fit min-w-full md:flex-[.5]">
+              <div className="flex justify-between items-center mb-5">
+                <p className="font-bold text-xs">Restaurant Track</p>
+                <Image src={scanner} alt="restaurant" />
+              </div>
+              <Button className="bg-[#fafafa86] border-primary-bg-100 border-2 mx-auto mt-10 text-primarygtext font-medium text-xs rounded-lg py-[11px] px-[32.5px] flex items-center gap-2 justify-center">
+                <Image src="/icon7.svg" height={27.6} width={27.6} alt="icon" />
+                <p className="text-mobile-caption font-bold">Setup Restaurant Profile</p>
+              </Button>
+            </div>
+          </SwiperSlide>
+          
           ...
         </Swiper>
       </div>
       {/* <div className="hidden md:flex flex-row gap-2 justify-between cursor-pointer font-jakarta"> */}
-        <div className="md:max-w-[299px] h-[227px] hidden md:flex flex-col justify-between bg-[#D6FBC4] p-4 rounded-2xl js-tilt mealreco md:min-w-fit  min-w-full md:flex-[.5]">
+      <div className="md:max-w-[299px] hidden md:flex flex-col justify-between md:min-w-fit  min-w-full md:flex-[.5]">
+      <p className='mx-auto w-fit font-bold text-[12px]'>Today&apos;s Spotlighted Blog</p>
+
+      {loadingBlog ? (
+          <DashboardBlogSkeleton />
+        ) : (<BlogCard key={key} title={title} text={text} category={category} showHeading/>)
+        }
+        </div>
+        {/* <div className="md:max-w-[299px] h-[227px] hidden md:flex flex-col justify-between bg-[#D6FBC4] p-4 rounded-2xl js-tilt mealreco md:min-w-fit  min-w-full md:flex-[.5]">
           <div className="flex justify-between items-center mb-5">
             <p className="font-bold text-xs">Restaurant Track</p>
             <Image src={scanner} alt="restaurant" />
@@ -85,13 +100,6 @@ const DashboardHighlights = ({ loading }: DashboardHighlightsProp) => {
             <Image src="/icon5.svg" height={27.6} width={27.6} alt="icon" />
             <p className="text-mobile-caption font-bold">Setup Restaurant Profile</p>
           </Button>
-        </div>
-        {/* <div className="md:flex-[.5] md:min-w-fit min-w-full">
-      <BlogCard category="nutrition" title="Eating Healthy" text="djjkdjsjksjks" showHeading/>
-      </div> */}
-
-        {/* <div className="flex md:hidden">
-          <DashboardProgressTracker />
         </div> */}
 
         <div className="max-w-[299px] hidden md:flex flex-col gap-6 bg-primary-bg p-4 rounded-2xl js-tilt h-full mealreco md:flex-[.5] daily-tea">

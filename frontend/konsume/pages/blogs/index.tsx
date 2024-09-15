@@ -9,6 +9,7 @@ import BlogContext from '@/context/BlogContext'
 import { BlogProps } from '@/@types'
 import Link from 'next/link'
 import { DashboardBlogSkeleton } from '@/components/skeleton-loaders/DashboardBlogSkeleton'
+import withAuth from '@/helpers/withAuth'
 
 const Blogs = () => {
 
@@ -62,7 +63,7 @@ const Blogs = () => {
                     </div>
                 ) : 
                 (tempBlogs.length > 0 ? (
-                    <div className='grid lg:grid-cols-3 grid-cols-1 gap-4 mt-6 mx-auto lg:mx-0 w-fit lg:w-full'>
+                    <div className='grid lg:grid-cols-4 grid-cols-1 gap-4 mt-6 mx-auto lg:mx-0 w-fit lg:w-full'>
                         {
                             tempBlogs?.map((blog: BlogProps) => (
                                 <BlogCard key={blog.id} title={blog.title} text={blog.text} category={blog.category} />
@@ -79,4 +80,4 @@ const Blogs = () => {
     )
 }
 
-export default Blogs
+export default withAuth(Blogs);

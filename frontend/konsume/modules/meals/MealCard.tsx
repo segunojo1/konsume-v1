@@ -58,16 +58,20 @@ const MealCard = ({ meal }: MealCardProps) => {
     if (cachedImageUrl) {
       setImageUrl(cachedImageUrl);
     } else {
-      fetchImage(meal?.name);
+      // fetchImage(meal?.name);
     }
   }, [recommendedMeals]);
+  const [imageSrc, setImageSrc] = useState(`/${meal.course.toLowerCase()}.svg`);
 
+    const handleError = () => {
+        setImageSrc('/meals.svg'); // Fallback image path
+    };
   return (
-    <div className=' md:mx-auto md:max-w-[354px] h-[292px] bg-[white] flex flex-col items-start gap-4 py-6 px-3 shadow-sm rounded-[34px] hover:shadow-lg font-satoshi lg:w-full w-fit'>
+    <Link href={`/meals/${meal.name}`} className=' md:mx-auto md:max-w-[354px] h-[292px] bg-[white] flex flex-col items-start gap-4 py-6 px-3 shadow-sm rounded-[34px] hover:shadow-lg font-satoshi lg:w-full w-fit'>
       <div
         className="justify-between [transform-style:preserve-3d] [&>*]:[transform-style:preserve-3d] flex flex-col gap-2 min-h-[130px] bg-primary-bg px-3 pt-3 relative rounded-lg w-full "
       >
-        <Image src={`${meal.course}.svg`} width={39} height={32} alt='expand' className='absolute -top-4 -right-4' />
+        <Image src={imageSrc} width={39} height={32} alt='expand' className='absolute -top-4 -right-4' onError={handleError}/>
         <div className="flex justify-between">
           <p className="text-secondary-500 font-bold text-mobile-caption ">{meal.course}</p>
         </div>
@@ -90,11 +94,11 @@ const MealCard = ({ meal }: MealCardProps) => {
           </p>
         </div>
       </div>
-      <Link href={`/meals/${meal.name}`} className='flex gap-5 items-center cursor-pointer'>
+      <div  className='flex gap-5 items-center cursor-pointer'>
         <Image src='/expand_meal.svg' width={39} height={32} alt='expand' className='hover:rotate-12 cursor-pointer' />
         <p className='font-bold text-[14px]/[120%]'>Open Meal</p>
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 };
 
