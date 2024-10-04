@@ -1,8 +1,6 @@
 'use client';
 import HomeBody from '@/modules/home/HomeBody';
 import HomeNav from '@/modules/home/HomeNav';
-import { Steps } from 'intro.js-react';
-import Link from 'next/link';
 import { Analytics } from "@vercel/analytics/react"
 
 function Home() {

@@ -9,7 +9,6 @@ import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { SignupActions } from "./SignupActions";
 import { SignupFields } from "./SignupFields";
-import { useRouter } from "next/router";
 
 const formSchema = z.object({
   Datee: z.string().min(1, { message: "Date of establishemnt is required" }),
@@ -21,7 +20,7 @@ const formSchema = z.object({
 });
 
 export const SignupForm = () => {
-  const router = useRouter();
+  const [showOtp, setShowOtp] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -49,7 +48,7 @@ export const SignupForm = () => {
             Password: values.Password,
           },
           {
-            headers: {"Content-Type": "application/json" },
+            headers: {"Content-Type": "multipart/form-data" },
           }
         ),
         {
@@ -58,7 +57,6 @@ export const SignupForm = () => {
           error: `Failed to create your account 🤯`,
         }
       );
-      router.push("/")
       // Cookies.set('userid', data.value.id);
 
       // setShowOtp(true);
