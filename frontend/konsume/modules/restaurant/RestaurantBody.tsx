@@ -18,7 +18,7 @@ const RestaurantBody = () => {
           integrate your menu, and reach customers effortlessly. Get ready for a
           seamless experience once this feature goes live!
         </p>
-        <Button className="px-10 py-[15px] mb-4 bg-primarygtext text-primary-bg rounded-[42px]">
+        <Button className="font-satoshi px-10 py-[15px] mb-4 bg-primarygtext text-primary-bg rounded-[42px]">
             <Link href="/auth/restaurant">
             Join the waitlist
             </Link>
@@ -28,7 +28,7 @@ const RestaurantBody = () => {
         <Image src="/konsume3.svg" alt="restaurant" width={261} height={261} />
         <Image src="/konsume1.svg" alt="restaurant" width={261} height={261} />
           <Link href="/" className="z-[99999]">
-        <Button className="px-10 py-[15px] bg-[white] text-primarytext rounded-[42px] -rotate-6 mb-11">
+        <Button className="font-satoshi px-10 py-[15px] bg-[white] text-primarytext rounded-[42px] -rotate-6 mb-11">
           Back to Home
         </Button>
           </Link>
